@@ -1,7 +1,7 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
-
+import { fetchCountries } from "./js/fetchCountries";
 
 const DEBOUNCE_DELAY = 300;
 
@@ -15,16 +15,12 @@ refs.input.addEventListener('input', debounce(onInputSerch, DEBOUNCE_DELAY));
 
 function onInputSerch(e) {
     e.preventDefault();
-    const sercQuery = e.target.value;
-    console.log(sercQuery);
-    fetchCountries(sercQuery).then(renderCountryCard).catch(onError);
+    const sercQuery = e.target.value.trim();
+    if (sercQuery === "") {
+         clearMarkup();
+    } else{console.log(sercQuery);
+    fetchCountries(sercQuery).then(renderCountryCard).catch(onError);}
     }
-
-function fetchCountries(name) {
-    return fetch(`https://restcountries.com/v3.1/name/${name}`).then(response => {
-        return response.json();
-    });
-}
 
 function renderCountryCard(country) {
     console.log(country);
@@ -44,22 +40,22 @@ function renderCountryCard(country) {
 function createListCountryMarkup(country) {
     const markup = country.map(({ flags, name }) =>
         `<li><img src="${flags.svg}" alt="${name.common}" width=40px, height = 30px >${name.common}</li>`
-    );
+    ).join('');
     
-    refs.cardCountryInfo.innerHTML = markup;
+    refs.cardCountryList.innerHTML = markup;
 };
     
 
 
 function createCountryMarkup(country) {
-    const markup = country.map(({ flags, name, capital, population, languages }) => 
-    `<h1><img src="${flags.png}" alt="${name.common}" width=40px, height = 30px>${name.common}</h1>
+    const markup = country.map(({ flags, name, capital, population, languages }) =>
+        `<h1><img src="${flags.png}" alt="${name.common}" width=40px, height = 30px>${name.common}</h1>
     <p>Capital: <span>${capital}</span></p>
     <p>Population: <span>${population}</span></p>
     <p>Languages: <span>${Object.values(languages).join(', ')}</span></p>`
     );
 
-     refs.cardCountryList.innerHTML = markup;
+     refs.cardCountryInfo.innerHTML = markup;
 }
 
 function clearMarkup() {
@@ -69,5 +65,5 @@ function clearMarkup() {
 
 function onError() {
     clearMarkup();
-    Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
+    Notiflix.Notify.failure("Oops, there is no country with that name");
 }
